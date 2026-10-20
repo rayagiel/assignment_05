@@ -36,8 +36,9 @@ def format_name(names: pd.Series) -> pd.Series:
     Strip each part, then join them back together in the other order with a
     space between. Same `.str` toolkit as `clean_employee_id`; no `apply`.
     """
-    # TODO: your code here
-    pass
+    split1 = names.str.split(",")
+    strip2 = split1.str[1].str.strip() + " " + split1.str[0].str.strip()
+    return strip2
 
 
 def add_roster(history: pd.DataFrame, employees: pd.DataFrame) -> pd.DataFrame:
@@ -56,8 +57,17 @@ def add_roster(history: pd.DataFrame, employees: pd.DataFrame) -> pd.DataFrame:
     history on `employee_id`. The history must have been through
     `add_clean_columns` first — the raw `employeeid` does not match anything.
     """
-    # TODO: your code here
-    pass
+    roster = employees.copy()
+    roster["display_name"] = format_name(employees["name"])
+    roster2 = roster[["employee_id", "display_name", "department"]]
+    history2 = add_clean_columns(history)
+    out = pd.merge(
+        history2,
+        roster2,
+        on="employee_id",
+        how="left",
+    )
+    return out
 
 
 def build_history(exports: list, employees: pd.DataFrame) -> pd.DataFrame:
@@ -68,8 +78,12 @@ def build_history(exports: list, employees: pd.DataFrame) -> pd.DataFrame:
     their work. The result has every raw column, every column the steps add, and
     one row per row of every export.
     """
-    # TODO: your code here
-    pass
+
+    history = combine_exports(exports)
+    cleaned_columns = add_clean_columns(history)
+    dates_added = add_date_parts(cleaned_columns)
+    out = add_roster(dates_added, employees)
+    return out
 
 
 def summarize_employees(history: pd.DataFrame) -> pd.DataFrame:
@@ -100,5 +114,14 @@ def summarize_employees(history: pd.DataFrame) -> pd.DataFrame:
     of a group-by by default. The app warns about them; this function does not
     need to.
     """
-    # TODO: your code here
-    pass
+    out = history.groupby(
+        ["employee_id", "display_name", "department"]
+    ).agg(
+        weeks_paid=("week_ending", "count"),
+        total_hours=("hours_worked", "sum"),
+        total_pay=("gross_pay", "sum"),
+        avg_hours=("hours_worked", "mean"),
+        overtime_weeks=("hours_worked", lambda hours: (hours > 40.0).sum()),
+    )
+    rounded = out.round({'total_pay': 2, 'avg_hours': 2})
+    return rounded.reset_index()

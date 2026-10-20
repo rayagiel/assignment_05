@@ -33,8 +33,14 @@ def hours_grid(history: pd.DataFrame) -> pd.DataFrame:
     `NaN` — for a week they were not paid. Use `pivot_table` with
     `fill_value=0`.
     """
-    # TODO: your code here
-    pass
+    output = history.pivot_table(
+      index=["employee_id", "display_name"],
+      columns="week_ending",
+      values="hours_worked",
+      fill_value=0,
+    )
+    final = output.reset_index().sort_values('employee_id')
+    return final
 
 
 def missed_weeks(grid: pd.DataFrame) -> pd.DataFrame:
@@ -48,8 +54,17 @@ def missed_weeks(grid: pd.DataFrame) -> pd.DataFrame:
     `melt` the grid back to long (the two name columns stay put; the week
     columns become `week_ending` / `hours_worked` pairs), then keep the zeros.
     """
-    # TODO: your code here
-    pass
+    output = grid.melt(
+      id_vars=["employee_id", "display_name"],
+      var_name="week_ending",
+      value_name="hours_worked",
+    )
+    final = (
+      output[output["hours_worked"] == 0]
+      .sort_values(["employee_id", "week_ending"])
+      .reset_index(drop=True)
+    )
+    return final
 
 
 def pay_by_month(history: pd.DataFrame) -> pd.DataFrame:
@@ -63,5 +78,11 @@ def pay_by_month(history: pd.DataFrame) -> pd.DataFrame:
     This is the CSV the accountant imports, and — with `month` as the x axis —
     exactly the shape `st.bar_chart` draws as one bar per department.
     """
-    # TODO: your code here
-    pass
+    output = history.pivot_table(
+      index=["month"],
+      columns="department",
+      values="gross_pay",
+      aggfunc="sum",
+      fill_value=0.0
+    )
+    return output.reset_index().sort_values('month')
