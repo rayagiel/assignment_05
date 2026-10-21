@@ -1,7 +1,19 @@
-Write your reflection here.
+During this assignment, I learned about how to call .str methods on entire series. I did not know that you could call .str methods on series, 
+as I did in payroll.history.py for the clean_employee_id and clean_number functions. This made was very useful because I could clean the entire
+series with one line of code; I did not need to loop through the other series. I also learned about how to use the groupby() function to 
+reshape data while performing aggregate functions. For example, in the function summarize_employees, I was able to use groupby() to aggregate
+the data so each employee was represented with one row. Each columns  counted, averaged, or summed all of the values for the rows for that specific
+person.
 
-See reflection.md for what makes a good reflection — be specific, use the
-terminology from this assignment (grain, long vs. wide, vectorized .str methods,
-coerce, NaT, pd.to_datetime format, .dt, concat, ignore_index, group by, named
-aggregation, reset_index, pivot_table, fill_value, melt, lineage), and make it
-actionable.
+One thing I struggled with was getting the st.warning to deploy correctly. I was really struggled with how to filter out the rows in history that 
+did not have a match in roster. I tried .isna, .isnull. and == pd.nan on the dataframe history[history["department"]]. I was successful once I 
+started using .isna() to identify which rows of the history dataframe did not have a department. I then looped through this dataframe, which I
+named unmatched_ids and then looped through to print the ids. However, I did not realize I needed to remove the unmatched ids from the dataframe 
+I was using for my outputs. For that, I had to use history = history[history["department"].notna()] to make sure the rows with an employee that 
+was missing from the roster were not counted. 
+
+For things to improve next time, I am going to pay much more attention to the directions. I did try to run the streamlit more frequently so I 
+could see what I was coding as I was coding it. However, I forgot many elements of the app because I did not read the directions. I forgot 
+to show the four columns of metrics with filtered data, which made the date_input and select_box useless. I found those steps very difficult 
+to add retrospectively. There were so many places that I had to change because I was using st.metrics that each called the wrong dataframe initially.
+If I had read the directions more carefully, I would have saved myself a lot of time and frustration. 

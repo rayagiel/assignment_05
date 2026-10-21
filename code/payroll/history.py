@@ -52,7 +52,6 @@ def clean_employee_id(ids: pd.Series) -> pd.Series:
     - The mistake people make: stopping after `.upper()`. `"E4"` is not `"E004"`,
       and Step 2's merge will not match it to anyone on the roster.
     """
-    result = pd.Series(dtype='str')
     ids2 = ids.str.strip().str.upper()
     id3 = "E" + ids2.str[1:].str.zfill(3)
     return id3
@@ -84,9 +83,10 @@ def clean_number(values: pd.Series) -> pd.Series:
     - This is `clean_currency` from Assignment 04, with no `apply` — the `.str`
       methods do the looping for you.
     """
-    cleaned1 = values.str.replace("$", "", regex=False).str.replace(",", "", regex=False)
+    cleaned2 = values.str.replace("$", "", regex=False)
+    cleaned1 = cleaned2.str.replace(",", "", regex=False)
     cleaned = cleaned1.str.strip()
-    nums = pd.to_numeric(cleaned, errors = "coerce")
+    nums = pd.to_numeric(cleaned, errors="coerce")
     result = nums.fillna(0.0)
     return result
 
@@ -116,7 +116,7 @@ def parse_pay_date(values: pd.Series) -> pd.Series:
       is how `"03/04/2026"` silently becomes April 3rd on someone's laptop.
     """
     us = pd.to_datetime(values, format="%m/%d/%Y", errors="coerce")
-    iso = pd.to_datetime(values, format = "%Y-%m-%d", errors = "coerce")
+    iso = pd.to_datetime(values, format="%Y-%m-%d", errors="coerce")
     result = us.fillna(iso)
     return result
 

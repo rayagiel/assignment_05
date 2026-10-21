@@ -72,6 +72,7 @@ if len(uploads) > 0:
     # unmatched employee_id warning
     unmatched_ids = history[history["department"].isna()]
     if len(unmatched_ids) > 0:
+        history = history[history["department"].notna()]
         warning = ""
         for row in unmatched_ids.itertuples():
             warning += row.employeeid
@@ -82,7 +83,7 @@ if len(uploads) > 0:
                 )
     # department select box
     departments = list(history["department"].drop_duplicates())
-    departments.append("ALL")
+    departments.insert(0, "ALL")
     department_selection = st.selectbox("Department", departments, key='Department')
 
     # date selection
@@ -92,31 +93,34 @@ if len(uploads) > 0:
     start_string = date_range[0].strftime("%Y-%m-%d")
     end_string = date_range[1].strftime("%Y-%m-%d")
 
-
     # filtered summary
     st.subheader(f"{department_selection} | {start_string} to {end_string}")
-    
     date_filter = (
         (history['pay_date'].dt.date >= date_range[0])
         & (history['pay_date'].dt.date <= date_range[1])
     )
     filtered_data = history[date_filter]
-    if department_selection != "ALL":
-        filtered = filtered_data[filtered_data["department"] == department_selection]
-        st.dataframe(filtered)
-    else:
-        filtered = filtered_data
-        
     col1, col2, col3, col4 = st.columns(4)
-    st.write(filtered)
-    with col1:
-        st.metric("Weeks", filtered["week_ending"].nunique())
-    with col2:
-        st.metric("Employees", filtered["display_name"].nunique())
-    with col3:
-        st.metric("Total hours", f"{filtered["hours_worked"].sum():,.2f}")
-    with col4:
-        st.metric("Total gross pay", f"${filtered['gross_pay'].sum():,.2f}")
+    if department_selection == "ALL":
+        with col1:
+            st.metric("Weeks", filtered_data["pay_date"].nunique())
+        with col2:
+            st.metric("Employees", filtered_data["display_name"].nunique())
+        with col3:
+            st.metric("Total hours", f"{filtered_data["hours_worked"].sum():,.2f}")
+        with col4:
+            st.metric("Total gross pay", f"${filtered_data['gross_pay'].sum():,.2f}")
+    else:
+        filtered = filtered_data[filtered_data["department"] == department_selection]
+        with col1:
+            st.metric("Weeks", filtered["pay_date"].nunique())
+        with col2:
+            st.metric("Employees", filtered["display_name"].nunique())
+        with col3:
+            st.metric("Total hours", f"{filtered["hours_worked"].sum():,.2f}")
+        with col4:
+            st.metric("Total gross pay", f"${filtered['gross_pay'].sum():,.2f}")
+
     # bar chat
     st.subheader("Gross pay by month")
     pay_data = pay_by_month(history)
